@@ -1,0 +1,84 @@
+# templates/genai-techdocs/template.yaml
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: genai-techdocs-template
+  title: Generate AI TechDocs
+  description: Generate technical documentation for your repository using AI
+  tags:
+    - recommended
+    - techdocs
+    - ai
+    - documentation
+spec:
+  owner: user:guest
+  type: documentation
+
+  parameters:
+    - title: Provide Repository Information
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository URL
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+        
+        branch:
+          title: Branch
+          type: string
+          description: Branch to generate documentation from
+          default: main
+        
+    - title: Documentation Options
+      properties:
+        includeDiagrams:
+          title: Include Diagrams
+          type: boolean
+          description: Generate Mermaid diagrams for architecture and flows
+          default: true
+        
+        includeApi:
+          title: Include API Documentation
+          type: boolean
+          description: Generate API documentation
+          default: true
+        
+        customPrompt:
+          title: Custom Prompt (Optional)
+          type: string
+          description: Custom prompt for the AI
+          ui:widget: textarea
+
+  steps:
+    - id: generate
+      name: Generate Documentation
+      action: genai:techdocs:generate
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branch: ${{ parameters.branch }}
+        options:
+          includeDiagrams: ${{ parameters.includeDiagrams }}
+          includeApi: ${{ parameters.includeApi }}
+          customPrompt: ${{ parameters.customPrompt }}
+
+    - id: publish
+      name: Create Pull Request
+      action: publish:github:pull-request
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        branchName: genai-techdocs-${{ random.id }}
+        title: 'docs: add AI-generated technical documentation'
+        description: |
+          This PR adds automatically generated technical documentation using AI.
+          
+          Generated documentation includes:
+          - Project overview
+          - Architecture documentation
+          ${{ parameters.includeDiagrams && '- Architecture and flow diagrams' }}
+          ${{ parameters.includeApi && '- API documentation' }}
+          - Setup instructions
+          - Dependencies and requirements
