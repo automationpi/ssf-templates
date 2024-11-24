@@ -1,0 +1,8 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: genai-techdocs-templates
+  description: Collection of GenAI TechDocs templates
+spec:
+  targets:
+    - ./genai-techdocs/template.yaml
